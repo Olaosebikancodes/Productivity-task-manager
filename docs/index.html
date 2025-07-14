@@ -1,0 +1,432 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Task Manager</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="output.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <h1><i class="fas fa-tasks"></i> Productivity Task Manager</h1>
+            <p>Drag and drop tasks between columns. All data is saved automatically to your browser. Click on task titles to edit them.</p>
+        </header>
+
+        <div class="app-container">
+            <!-- Sidebar: Add Task Form & Stats -->
+            <div class="sidebar">
+                <h2><i class="fas fa-plus-circle"></i> Add New Task</h2>
+                <form id="task-form">
+                    <input type="hidden" id="task-id">
+                    <div class="form-group">
+                        <label for="title"><i class="fas fa-heading"></i> Task Title</label>
+                        <input type="text" id="title" class="form-control" placeholder="What needs to be done?" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                        <textarea id="description" class="form-control" rows="3" placeholder="Add details..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category"><i class="fas fa-tag"></i> Category</label>
+                        <select id="category" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option value="work">Work</option>
+                            <option value="personal">Personal</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="health">Health</option>
+                            <option value="learning">Learning</option>
+                            <option value="finance">Finance</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority"><i class="fas fa-exclamation-circle"></i> Priority</label>
+                        <select id="priority" class="form-control" required>
+                            <option value="">Select Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" id="submit-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                    <button type="button" id="cancel-btn" class="btn btn-secondary" style="display:none;">
+                        <i class="fas fa-times"></i> Cancel Edit
+                    </button>
+                </form>
+                
+                <!-- Task Statistics -->
+                <div class="stats">
+                    <h3><i class="fas fa-chart-pie"></i> Task Statistics</h3>
+                    <div class="stat-item">
+                        <span>Total Tasks:</span>
+                        <span id="total-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>To Do:</span>
+                        <span id="todo-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>In Progress:</span>
+                        <span id="inprogress-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>In Review:</span>
+                        <span id="review-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Completed:</span>
+                        <span id="done-tasks">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Board: Task Columns -->
+            <div class="board">
+                <!-- To Do Column -->
+                <div class="column todo" id="todo-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-clipboard-list"></i> To Do</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="todo-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No tasks here yet</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- In Progress Column -->
+                <div class="column in-progress" id="in-progress-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-spinner"></i> In Progress</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="in-progress-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-cogs"></i>
+                            <p>No tasks in progress</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Review Column -->
+                <div class="column review" id="review-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-search"></i> Review</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="review-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-eye"></i>
+                            <p>No tasks to review</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Done Column -->
+                <div class="column done" id="done-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-check-circle"></i> Done</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="done-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-trophy"></i>
+                            <p>No tasks completed yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <h2 class="modal-title"><i class="fas fa-edit"></i> Edit Task</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-task-id">
+                <div class="form-group">
+                    <label for="edit-title">Task Title</label>
+                    <input type="text" id="edit-title" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" class="form-control" required>
+                        <option value="work">Work</option>
+                        <option value="personal">Personal</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="health">Health</option>
+                        <option value="learning">Learning</option>
+                        <option value="finance">Finance</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-priority">Priority</label>
+                    <select id="edit-priority" class="form-control" required>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-status">Status</label>
+                    <select id="edit-status" class="form-control" required>
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="review">Review</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Task
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+</body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Task Manager</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="output.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <h1><i class="fas fa-tasks"></i> Productivity Task Manager</h1>
+            <p>Drag and drop tasks between columns. All data is saved automatically to your browser. Click on task titles to edit them.</p>
+        </header>
+
+        <div class="app-container">
+            <!-- Sidebar: Add Task Form & Stats -->
+            <div class="sidebar">
+                <h2><i class="fas fa-plus-circle"></i> Add New Task</h2>
+                <form id="task-form">
+                    <input type="hidden" id="task-id">
+                    <div class="form-group">
+                        <label for="title"><i class="fas fa-heading"></i> Task Title</label>
+                        <input type="text" id="title" class="form-control" placeholder="What needs to be done?" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                        <textarea id="description" class="form-control" rows="3" placeholder="Add details..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category"><i class="fas fa-tag"></i> Category</label>
+                        <select id="category" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option value="work">Work</option>
+                            <option value="personal">Personal</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="health">Health</option>
+                            <option value="learning">Learning</option>
+                            <option value="finance">Finance</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority"><i class="fas fa-exclamation-circle"></i> Priority</label>
+                        <select id="priority" class="form-control" required>
+                            <option value="">Select Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" id="submit-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                    <button type="button" id="cancel-btn" class="btn btn-secondary" style="display:none;">
+                        <i class="fas fa-times"></i> Cancel Edit
+                    </button>
+                </form>
+                
+                <!-- Task Statistics -->
+                <div class="stats">
+                    <h3><i class="fas fa-chart-pie"></i> Task Statistics</h3>
+                    <div class="stat-item">
+                        <span>Total Tasks:</span>
+                        <span id="total-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>To Do:</span>
+                        <span id="todo-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>In Progress:</span>
+                        <span id="inprogress-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>In Review:</span>
+                        <span id="review-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Completed:</span>
+                        <span id="done-tasks">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Board: Task Columns -->
+            <div class="board">
+                <!-- To Do Column -->
+                <div class="column todo" id="todo-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-clipboard-list"></i> To Do</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="todo-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No tasks here yet</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- In Progress Column -->
+                <div class="column in-progress" id="in-progress-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-spinner"></i> In Progress</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="in-progress-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-cogs"></i>
+                            <p>No tasks in progress</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Review Column -->
+                <div class="column review" id="review-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-search"></i> Review</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="review-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-eye"></i>
+                            <p>No tasks to review</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Done Column -->
+                <div class="column done" id="done-column">
+                    <div class="column-header">
+                        <h3 class="column-title"><i class="fas fa-check-circle"></i> Done</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="tasks" id="done-tasks-container">
+                        <div class="empty-state">
+                            <i class="fas fa-trophy"></i>
+                            <p>No tasks completed yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Edit Task Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <h2 class="modal-title"><i class="fas fa-edit"></i> Edit Task</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-task-id">
+                <div class="form-group">
+                    <label for="edit-title">Task Title</label>
+                    <input type="text" id="edit-title" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" class="form-control" required>
+                        <option value="work">Work</option>
+                        <option value="personal">Personal</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="health">Health</option>
+                        <option value="learning">Learning</option>
+                        <option value="finance">Finance</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-priority">Priority</label>
+                    <select id="edit-priority" class="form-control" required>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-status">Status</label>
+                    <select id="edit-status" class="form-control" required>
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="review">Review</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Task
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+</body>
+>>>>>>> f7b482e (Trigger rebuild)
+</html>
