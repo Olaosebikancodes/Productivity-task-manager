@@ -6,23 +6,12 @@
                 // Set currentId to next available id
                 this.currentId = this.tasks.length > 0 ? Math.max(...this.tasks.map(t => t.id)) + 1 : 1;
                 this.init();
-                        this.touchState = {
-                                isDragging: false,
-                                draggedElement: null,
-                                startY: 0,
-                                startX: 0,
-                                currentTask: null,
-                                originalParent: null,
-                                originalTransition: '',
-                                originalZIndex: ''
-        };
             }
 
             // Initialize the app: cache DOM elements, set up events, render tasks, update stats
             init() {
                 this.cacheElements();
                 this.setupEventListeners();
-                this.setupTouchEvents();
                 this.renderTasks();
                 this.updateStats();
             }
@@ -100,92 +89,6 @@
                     }
                 });
             }
-setupTouchEvents() {
-    document.addEventListener('touchstart', (e) => {
-        const taskElement = e.target.closest('.task');
-        if (taskElement && !e.target.closest('.task-actions') && !e.target.closest('.quick-actions')) {
-            this.touchState.isDragging = true;
-            this.touchState.draggedElement = taskElement;
-            this.touchState.startY = e.touches[0].clientY;
-            this.touchState.startX = e.touches[0].clientX;
-            this.touchState.currentTask = parseInt(taskElement.dataset.id);
-            this.touchState.originalParent = taskElement.parentNode;
-
-            // Store original styles for restoration
-            this.touchState.originalTransition = taskElement.style.transition;
-            this.touchState.originalZIndex = taskElement.style.zIndex;
-
-            taskElement.style.transition = 'transform 0.2s ease';
-            taskElement.style.transform = 'scale(1.05)';
-            taskElement.style.zIndex = '1000';
-        }
-    }, { passive: true });
-
-    // Updated touchmove handler with conflict prevention (Step 5)
-    document.addEventListener('touchmove', (e) => {
-        if (this.touchState.isDragging && this.touchState.draggedElement) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-
-            const touch = e.touches[0];
-            const deltaY = touch.clientY - this.touchState.startY;
-            const deltaX = touch.clientX - this.touchState.startX;
-            
-            this.touchState.draggedElement.style.transform =
-                `translate(${deltaX}px, ${deltaY}px) scale(1.05)`;
-        }
-    }, { passive: false });
-
-    // Updated touchend handler with proper status update (Step 4)
-    document.addEventListener('touchend', (e) => {
-        if (this.touchState.isDragging && this.touchState.draggedElement) {
-            const touch = e.changedTouches[0];
-            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-            const dropZone = elementBelow?.closest('.tasks');
-            const draggedElement = this.touchState.draggedElement;
-
-            // Reset element styles
-            draggedElement.style.transition = 'transform 0.3s ease';
-            draggedElement.style.transform = '';
-            draggedElement.style.zIndex = this.touchState.originalZIndex;
-
-            // Handle task movement
-            if (dropZone && dropZone !== this.touchState.originalParent) {
-                const newColumnId = dropZone.dataset.columnId;
-                if (newColumnId) {
-                    this.updateTaskStatus(this.touchState.currentTask, newColumnId);
-                }
-            }
-
-            // Cleanup after transition completes
-            const onTransitionEnd = () => {
-                draggedElement.removeEventListener('transitionend', onTransitionEnd);
-                draggedElement.style.transition = this.touchState.originalTransition;
-            };
-            
-            draggedElement.addEventListener('transitionend', onTransitionEnd);
-            
-            // Reset touch state
-            this.touchState.isDragging = false;
-            this.touchState.draggedElement = null;
-            this.touchState.startY = 0;
-            this.touchState.startX = 0;
-            this.touchState.currentTask = null;
-            this.touchState.originalParent = null;
-        }
-    });
-}
-moveTaskToColumn(taskId, columnId) {
-    // Find task in your data store
-    const task = this.tasks.find(t => t.id === taskId);
-
-    // Update task's column
-    if (task) task.columnId = columnId;
-
-    // Trigger any necessary UI updates
-    this.updateTaskList();
-}
 
             // Add or update a task from the main form
             addTaskFromForm() {
