@@ -98,7 +98,12 @@ setupTouchEvents() {
             this.touchState.startY = e.touches[0].clientY;
             this.touchState.startX = e.touches[0].clientX;
             this.touchState.currentTask = parseInt(taskElement.dataset.id);
-            
+            this.touchState.originalParent = taskElement.parentNode;
+
+            // Store original styles for restoration
+            this.touchState.originalTransition = taskElement.style.transition;
+            this.touchState.originalZIndex = taskElement.style.zIndex;
+
             taskElement.style.transition = 'transform 0.2s ease';
             taskElement.style.transform = 'scale(1.05)';
             taskElement.style.zIndex = '1000';
@@ -111,8 +116,8 @@ setupTouchEvents() {
             const touch = e.touches[0];
             const deltaY = touch.clientY - this.touchState.startY;
             const deltaX = touch.clientX - this.touchState.startX;
-            
-            this.touchState.draggedElement.style.transform = 
+
+            this.touchState.draggedElement.style.transform =
                 `translate(${deltaX}px, ${deltaY}px) scale(1.05)`;
         }
     }, { passive: false });
@@ -127,19 +132,25 @@ setupTouchEvents() {
             // Reset element styles
             draggedElement.style.transition = 'transform 0.3s ease';
             draggedElement.style.transform = '';
-            draggedElement.style.zIndex = '';
+            draggedElement.style.zIndex = this.touchState.originalZIndex;
 
-            // Handle task movement if valid drop zone
-            if (dropZone && dropZone !== draggedElement.parentNode) {
+            // Handle task movement
+            if (dropZone && dropZone !== this.touchState.originalParent) {
+                // Move to new container
                 dropZone.appendChild(draggedElement);
-                // Optional: Add logic to update data model here
-                // this.moveTaskToColumn(this.touchState.currentTask, dropZone.dataset.columnId);
+
+                // ✅ Update data model
+                const newColumnId = dropZone.dataset.columnId;
+                this.moveTaskToColumn(this.touchState.currentTask, newColumnId);
             }
 
             // Cleanup after transition completes
-            setTimeout(() => {
-                draggedElement.style.transition = '';
-            }, 300);
+            const onTransitionEnd = () => {
+                draggedElement.removeEventListener('transitionend', onTransitionEnd);
+                draggedElement.style.transition = this.touchState.originalTransition;
+            };
+
+            draggedElement.addEventListener('transitionend', onTransitionEnd);
 
             // Reset touch state
             this.touchState.isDragging = false;
@@ -147,9 +158,22 @@ setupTouchEvents() {
             this.touchState.startY = 0;
             this.touchState.startX = 0;
             this.touchState.currentTask = null;
+            this.touchState.originalParent = null;
         }
     });
+},
+
+moveTaskToColumn(taskId, columnId) {
+    // Find task in your data store
+    const task = this.tasks.find(t => t.id === taskId);
+
+    // Update task's column
+    if (task) task.columnId = columnId;
+
+    // Trigger any necessary UI updates
+    this.updateTaskList();
 }
+
             // Add or update a task from the main form
             addTaskFromForm() {
                 const title = document.getElementById('title').value.trim();
