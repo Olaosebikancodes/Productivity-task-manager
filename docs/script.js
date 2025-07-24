@@ -6,12 +6,23 @@
                 // Set currentId to next available id
                 this.currentId = this.tasks.length > 0 ? Math.max(...this.tasks.map(t => t.id)) + 1 : 1;
                 this.init();
+                        this.touchState = {
+                                isDragging: false,
+                                draggedElement: null,
+                                startY: 0,
+                                startX: 0,
+                                currentTask: null,
+                                originalParent: null,
+                                originalTransition: '',
+                                originalZIndex: ''
+        };
             }
 
             // Initialize the app: cache DOM elements, set up events, render tasks, update stats
             init() {
                 this.cacheElements();
                 this.setupEventListeners();
+                this.setupTouchEvents();
                 this.renderTasks();
                 this.updateStats();
             }
@@ -110,18 +121,23 @@ setupTouchEvents() {
         }
     }, { passive: true });
 
+    // Updated touchmove handler with conflict prevention (Step 5)
     document.addEventListener('touchmove', (e) => {
         if (this.touchState.isDragging && this.touchState.draggedElement) {
             e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
             const touch = e.touches[0];
             const deltaY = touch.clientY - this.touchState.startY;
             const deltaX = touch.clientX - this.touchState.startX;
-
+            
             this.touchState.draggedElement.style.transform =
                 `translate(${deltaX}px, ${deltaY}px) scale(1.05)`;
         }
     }, { passive: false });
 
+    // Updated touchend handler with proper status update (Step 4)
     document.addEventListener('touchend', (e) => {
         if (this.touchState.isDragging && this.touchState.draggedElement) {
             const touch = e.changedTouches[0];
@@ -136,12 +152,10 @@ setupTouchEvents() {
 
             // Handle task movement
             if (dropZone && dropZone !== this.touchState.originalParent) {
-                // Move to new container
-                dropZone.appendChild(draggedElement);
-
-                // ✅ Update data model
                 const newColumnId = dropZone.dataset.columnId;
-                this.moveTaskToColumn(this.touchState.currentTask, newColumnId);
+                if (newColumnId) {
+                    this.updateTaskStatus(this.touchState.currentTask, newColumnId);
+                }
             }
 
             // Cleanup after transition completes
@@ -149,9 +163,9 @@ setupTouchEvents() {
                 draggedElement.removeEventListener('transitionend', onTransitionEnd);
                 draggedElement.style.transition = this.touchState.originalTransition;
             };
-
+            
             draggedElement.addEventListener('transitionend', onTransitionEnd);
-
+            
             // Reset touch state
             this.touchState.isDragging = false;
             this.touchState.draggedElement = null;
@@ -161,8 +175,7 @@ setupTouchEvents() {
             this.touchState.originalParent = null;
         }
     });
-},
-
+}
 moveTaskToColumn(taskId, columnId) {
     // Find task in your data store
     const task = this.tasks.find(t => t.id === taskId);
